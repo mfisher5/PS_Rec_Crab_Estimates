@@ -11,4 +11,5 @@ This repository includes the code and data used to generate harvest estimates ba
 - **2023 RM Survey** - Data and processing code from the 2023 summer and winter non-respondent surveys conducted by *Responsive Management*.
 
 
-
+Change log: 
+*9/17/2026* - updates to EUC code and data. contributed by: Mary Fisher, SITC
