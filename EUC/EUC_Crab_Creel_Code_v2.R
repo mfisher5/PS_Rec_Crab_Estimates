@@ -4,6 +4,12 @@
 # Authors: Blair Winnacott, Katelyn Bosley, WDFW
 #    edited 9/17/2026 by Mary Fisher, SITC
 #
+# Edits: (1) weight years by all interviews conducted, 
+#            not just those with successful crabbers.
+#        (2) for areas that use a puget sound-wide estimate,
+#            weight the EUC by catch from the period over 
+#            which the CREEL was conducted.
+#
 #
 ############################################
 
@@ -48,14 +54,14 @@ library(here)
 # Set up 
 #Input.directory=paste0("YOUR WORKING DIRECTORY")
 # Input.directory=paste0(getwd(),"/Creel Data")
-Input.directory=here('EUC','Creel_Data','2025_Creel')
+Input.directory=here()
 
 set.seed(12345)
 
 
 # Define directory and read data in
 Input.directory.25=paste0(Input.directory,"/Creel_Data_Shared_2025_Updated.xlsx")
-boat <- readxl::read_excel(Input.directory.25)
+boat <- read_excel(Input.directory.25)
 boat.25=as.data.frame(boat)
 
 #Combine 7N and 7S into 7
@@ -71,9 +77,6 @@ boat.25=boat.25 %>% filter(marine_area_fished=="7" & creel_date <= "2025-09-30" 
                              marine_area_fished=="10" & creel_date <= "2025-09-01" |
                              marine_area_fished=="11" & creel_date <= "2025-09-01" |
                              marine_area_fished=="12" & creel_date <= "2025-09-01")
-
-#get total number of interviews in these periods
-total.contacts <- boat.25 |> group_by(marine_area_fished) |> summarize(total.contacts=length(unique(Boat_ID)))
 
 # 2) Remove boats where CRCs not checked due to reasons other than non-compliance
 #non-compliance = refused to show CRCs/did not have them in possession
@@ -179,8 +182,6 @@ EUC.Table.25=na.omit(EUC.Table.25)
 EUC.Table.25$margin_error=as.numeric(EUC.Table.25$margin_error)
 EUC.Table.25$perMOE=EUC.Table.25$margin_error/EUC.Table.25$EUC
 EUC.Table.25$CV=EUC.Table.25$EUC.boot.SD/EUC.Table.25$EUC
-EUC.Table.25 %<>% left_join(total.contacts, by=c('areas.25'='marine_area_fished'))
-EUC.Table.25 %<>% relocate(total.contacts,.before='n.boats.euc')
 
 EUC.Table.25$areas.25<-factor(EUC.Table.25$areas.25,levels=c("6","7", "8_1", "8_2","9", "10", "11", "12"))
 EUC.Table.25<-EUC.Table.25 %>% arrange(EUC.Table.25$areas.25)
@@ -198,13 +199,13 @@ rm(list=ls()) # added MCF -- this is critical to ensure objects aren't accidenta
 # Set up 
 #Input.directory=paste0("YOUR WORKING DIRECTORY")
 # Input.directory=paste0(getwd(),"/Creel Data")
-Input.directory=here('EUC','Creel_Data','2024_Creel')
+Input.directory=here()
 
 set.seed(12345)
 
 # Define directory and read data in
-Input.directory.24=paste0(Input.directory,"/2024 Crab Creel Data.xlsx")
-boat <- readxl::read_excel(Input.directory.24)
+Input.directory.24=paste0(Input.directory,"/Creel_Data_Shared_2024.xlsx")
+boat <- read_excel(Input.directory.24)
 boat.24=as.data.frame(boat)
 
 #Combine 7N and 7S into 7
@@ -220,12 +221,10 @@ boat.24=boat.24 %>% filter(marine_area=="7" & creel_date <= "2024-09-30" |
                              marine_area=="10" & creel_date <= "2024-09-02" |
                              marine_area=="11" & creel_date <= "2024-09-02" |
                              marine_area=="12" & creel_date <= "2024-09-02")
-#get total number of interviews in these periods
-total.contacts.24 <- boat.24 |> group_by(marine_area_fished) |> summarize(total.contacts=length(unique(Boat_ID)))
 
 #Remove boats where CRCs not checked due to reasons other than non-compliance
 #non-compliance = refused to show CRCs/did not have them in possession
-boat.24 = boat.24 %>% filter(is.na(n_crcs_checked) | n_crcs_checked=="No CRCs" | n_crcs_checked=="No Cooperation")
+boat.24 = boat.24 %>% filter(is.na(cards_0) | cards_0=="No CRCs" | cards_0=="No Cooperation")
 
 #Identify over-recorded crab and remove any crab that were over-recorded by making the number of crab recorded equal what was in possession
 boat.24$over_recorded.yn <- ifelse(boat.24$n_crab_recorded > boat.24$n_dung_boat, "yes", "no") 
@@ -320,8 +319,6 @@ EUC.Table.24=na.omit(EUC.Table.24)
 EUC.Table.24$margin_error=as.numeric(EUC.Table.24$margin_error)
 EUC.Table.24$perMOE=EUC.Table.24$margin_error/EUC.Table.24$EUC
 EUC.Table.24$CV=EUC.Table.24$EUC.boot.SD/EUC.Table.24$EUC
-EUC.Table.24 %<>% left_join(total.contacts.24, by=c('areas.24'='marine_area_fished'))
-EUC.Table.24 %<>% relocate(total.contacts,.before='n.boats.euc')
 
 
 EUC.Table.24$areas.24<-factor(EUC.Table.24$areas.24,levels=c("6","7", "8_1", "8_2","9", "10", "11", "12"))
@@ -367,8 +364,6 @@ boat.23=boat.23 %>% filter(marine_area=="7" & creel_date <= "2023-09-30" |
                              marine_area=="10" & creel_date <= "2023-09-04" |
                              marine_area=="11" & creel_date <= "2023-09-04" |
                              marine_area=="12" & creel_date <= "2023-09-04")
-#get total number of interviews in these periods
-total.contacts.23 <- boat.23 |> group_by(marine_area_fished) |> summarize(total.contacts=length(unique(Boat_ID)))
 
 #Remove the last columns (purpose for de-duplication to boat level) 
 boat.23=boat.23[,-c(34:43)]
@@ -471,8 +466,6 @@ EUC.Table.23=na.omit(EUC.Table.23)
 EUC.Table.23$margin_error=as.numeric(EUC.Table.23$margin_error)
 EUC.Table.23$perMOE=EUC.Table.23$margin_error/EUC.Table.23$EUC
 EUC.Table.23$CV=EUC.Table.23$EUC.boot.SD/EUC.Table.23$EUC
-EUC.Table.23 %<>% left_join(total.contacts.23, by=c('areas.23'='marine_area_fished'))
-EUC.Table.23 %<>% relocate(total.contacts,.before='n.boats.euc')
 
 EUC.Table.23$areas.23<-factor(EUC.Table.23$areas.23,levels=c("6","7", "8_1", "8_2","9", "10", "11", "12"))
 EUC.Table.23<-EUC.Table.23 %>% arrange(EUC.Table.23$areas.23)
