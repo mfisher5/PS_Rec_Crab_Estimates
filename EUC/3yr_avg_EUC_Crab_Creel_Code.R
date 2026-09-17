@@ -59,6 +59,7 @@ focal_euc_data <- focal_euc_data |>
   mutate(marine_area_contacts=sum(total_contacts),
          marine_area_success=sum(n_boats_euc)) |> 
   ungroup() |> 
+  ## get weight of each year = annual interviews / total interviews
   mutate(annual_weight_all = total_contacts/marine_area_contacts,
          annual_weight_success = n_boats_euc/marine_area_success) |> 
   ## multiply annual EUC with weights
@@ -84,4 +85,34 @@ focal_euc <- focal_euc_data |>
 #same three years. Weighting by area needs to be tested before this method is implemented; the TWG
 #suggested some ideas if it does not work.
 
+nonfocal_data <- EUC.Table |> mutate(region="Puget_Sound")
 
+#Step 1: get a Puget Sound-wide EUC estimate for all areas, with each year weighted.
+ps_wide <- nonfocal_data |> 
+  group_by(region,year) |> 
+  summarise(total_contacts=sum(total_contacts),
+         n_boats_euc=sum(n_boats_euc),
+         unrecorded_euc=sum(unrecorded_euc),
+         recorded_euc=sum(recorded_euc),
+         dung_kept_euc=sum(dung_kept_euc)) |> 
+  mutate(euc=unrecorded_euc/recorded_euc)
+
+ps_wide <- ps_wide |> 
+  group_by(region)  |> 
+  mutate(marine_area_contacts=sum(total_contacts),
+         marine_area_success=sum(n_boats_euc)) |> 
+  ungroup() |> 
+  ## get weight of each year = annual interviews / total interviews
+  mutate(annual_weight_all = total_contacts/marine_area_contacts,
+         annual_weight_success = n_boats_euc/marine_area_success) |> 
+  ## multiply annual EUC with weights
+  mutate(euc_weight_all=euc*annual_weight_all,
+         euc_weight_success=euc*annual_weight_success)
+
+ps_wide_euc <- ps_wide |> 
+  group_by(region) |> 
+  summarise(avg_euc_all = sum(euc_weight_all),
+            avg_euc_success = sum(euc_weight_success))
+
+
+#Step 2: Weight based on the CRC catch proportion by Marine Area from those same three years
