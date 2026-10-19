@@ -12,4 +12,11 @@ This repository includes the code and data used to generate harvest estimates ba
 
 
 Change log: 
-*9/17/2026* - updates to EUC code and data. contributed by: Mary Fisher, SITC
+*9/17/2026* - replace outdated creel data. contributed by: Mary Fisher, SITC
+*9/17/2026* - add missing EUC code. fix EUC code. contributed by: Mary Fisher, SITC
+
+Wish list:
+- Replicable files that produce the final 3-yr average EUCs. 
+- Direction on which tables to use to weight the EUC calculation by CRC catch
+- Can Output be labeled by table number, as tables appear in the catch memos? and different sheets in the excel spreadsheets for harvest estimate outputs should be either labeled by name, or described with a readme
+- Please following established guidelines for organization and the inclusion of "readme" files, so that the analysis is actually, in practice, transparent and reproducible: Wilson et al. (2013) [Good enough practices in scientific computing](https://doi.org/10.1371/journal.pcbi.1005510)

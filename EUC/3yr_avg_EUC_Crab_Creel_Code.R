@@ -89,13 +89,16 @@ nonfocal_data <- EUC.Table |> mutate(region="Puget_Sound")
 
 #Step 1: get a Puget Sound-wide EUC estimate for all areas, with each year weighted.
 ps_wide <- nonfocal_data |> 
-  group_by(region,year) |> 
-  summarise(total_contacts=sum(total_contacts),
-         n_boats_euc=sum(n_boats_euc),
-         unrecorded_euc=sum(unrecorded_euc),
-         recorded_euc=sum(recorded_euc),
-         dung_kept_euc=sum(dung_kept_euc)) |> 
-  mutate(euc=unrecorded_euc/recorded_euc)
+  group_by(marine_area) |> 
+  mutate(marine_area_contacts=sum(total_contacts),
+         marine_area_success=sum(n_boats_euc)) |> 
+  ungroup() |> 
+  ## get weight of each year = annual interviews / total interviews
+  mutate(annual_weight_all = total_contacts/marine_area_contacts,
+         annual_weight_success = n_boats_euc/marine_area_success) |> 
+  ## multiply annual EUC with weights
+  mutate(euc_weight_all=euc*annual_weight_all,
+         euc_weight_success=euc*annual_weight_success)
 
 ps_wide <- ps_wide |> 
   group_by(region)  |> 
@@ -109,6 +112,23 @@ ps_wide <- ps_wide |>
   mutate(euc_weight_all=euc*annual_weight_all,
          euc_weight_success=euc*annual_weight_success)
 
+#Step 2: Read in the recorded catch from catch record cards
+#2023
+crc.23 <- readxl::read_excel(here('Harvest Estimates','2023.2024 Estimate','Estimate Output','All Year Summary','2023_Summer_CRC_Tables_Final.csv'))|> 
+  clean_names() |> mutate(year=2023)
+
+#2024
+EUC.Table.24 <- readxl::read_excel(here('Harvest Estimates','2023.2024 Estimate','Estimate Output','All Year Summary','2023_Summer_CRC_Tables_Final.csv'))|> 
+  clean_names() |> mutate(year=2024)
+
+#2025
+crc.25 <- readxl::read_excel(here('Harvest Estimates','2025 CRC Estimate','2025_Summer_CRC_Tables.xlsx'))|> 
+  clean_names() |> mutate(year=2025)
+
+#Combine
+EUC.Table <- bind_rows(EUC.Table.23, EUC.Table.24, EUC.Table.25)
+
+
 ps_wide_euc <- ps_wide |> 
   group_by(region) |> 
   summarise(avg_euc_all = sum(euc_weight_all),
@@ -116,3 +136,10 @@ ps_wide_euc <- ps_wide |>
 
 
 #Step 2: Weight based on the CRC catch proportion by Marine Area from those same three years
+
+
+
+
+
+
+
